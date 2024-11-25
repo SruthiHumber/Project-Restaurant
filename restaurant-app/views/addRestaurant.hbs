@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('/images/two.jpg');
+            /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+
+<body class="text-gray-800 font-sans leading-normal tracking-normal">
+    <!-- Header -->
+    <header class="bg-[#c85250] shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/form">
+            <h1 class="text-4xl font-bold text-white px-10">CuisineAtlas</h1>
+            </a>
+            <nav class="space-x-5">
+                <a href="/login" class="text-white hover:text-gray-300 text-l px-10">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="bg-black bg-opacity-50  mx-auto max-w-5xl px-5 py-10">
+        <div class="flex justify-center items-center min-h-screen">
+            <div class="bg-[#F9F8EB] p-10 rounded-lg shadow-md w-11/12 max-w-2xl border border-gray-200">
+                <h2 class="text-3xl font-semibold mb-6 text-center text-[#2E2E2E]">Add New Restaurant</h2>
+                <form id="addRestaurantForm" class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name:</label>
+                        <input type="text" id="name" name="name" required
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="borough" class="block text-sm font-medium text-gray-700">Borough:</label>
+                        <input type="text" id="borough" name="borough"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="cuisine" class="block text-sm font-medium text-gray-700">Cuisine:</label>
+                        <input type="text" id="cuisine" name="cuisine" required
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-700">Address</h3>
+                    <div>
+                        <label for="building" class="block text-sm font-medium text-gray-700">Building:</label>
+                        <input type="text" id="building" name="building"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="street" class="block text-sm font-medium text-gray-700">Street:</label>
+                        <input type="text" id="street" name="street"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="zipcode" class="block text-sm font-medium text-gray-700">Zipcode:</label>
+                        <input type="text" id="zipcode" name="zipcode"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="coord" class="block text-sm font-medium text-gray-700">Coordinates (Longitude,
+                            Latitude):</label>
+                        <input type="text" id="coord" name="coord" placeholder="e.g., -73.856077,40.848447"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-700">Grades</h3>
+                    <div>
+                        <label for="grade" class="block text-sm font-medium text-gray-700">Grade:</label>
+                        <input type="text" id="grade" name="grade"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="score" class="block text-sm font-medium text-gray-700">Score:</label>
+                        <input type="number" id="score" name="score"
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <div>
+                        <label for="restaurant_id" class="block text-sm font-medium text-gray-700">Restaurant
+                            ID:</label>
+                        <input type="text" id="restaurant_id" name="restaurant_id" required
+                            class="w-full p-2 border rounded focus:outline-none focus:ring focus:ring-gray-400">
+                    </div>
+                    <button type="submit"
+                        class="bg-[#2E2E2E] text-white px-4 py-2 rounded shadow hover:bg-gray-700 focus:outline-none w-full">
+                        Add Restaurant
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#c85250] text-white py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Restro. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Handle form submission
+        document.getElementById('addRestaurantForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const restaurantData = {
+                name: document.getElementById('name').value,
+                borough: document.getElementById('borough').value,
+                cuisine: document.getElementById('cuisine').value,
+                address: {
+                    building: document.getElementById('building').value,
+                    street: document.getElementById('street').value,
+                    zipcode: document.getElementById('zipcode').value,
+                    coord: document.getElementById('coord').value.split(',').map(Number), // Convert to an array of numbers
+                },
+                grades: [
+                    {
+                        grade: document.getElementById('grade').value,
+                        score: parseInt(document.getElementById('score').value, 10) || null,
+                    },
+                ],
+                restaurant_id: document.getElementById('restaurant_id').value,
+            };
+
+            try {
+                const response = await fetch('/api/restaurants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(restaurantData),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`Failed to add restaurant: ${response.statusText}`);
+
+                const result = await response.json();
+                alert('Restaurant added successfully!');
+                window.location.href = '/form'; // Redirect to the restaurant list page
+            } catch (error) {
+                console.error('Error adding restaurant:', error);
+                alert('Failed to add restaurant. Please try again.');
+            }
+        });
+    </script>
+</body>
+
+</html>

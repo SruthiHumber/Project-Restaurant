@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const methodOverride = require('method-override');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const exphbs = require('express-handlebars');
@@ -11,7 +12,9 @@ const session = require('express-session');
 const path = require('path');
 const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access');
 const Handlebars = require('handlebars');
-const methodOverride = require('method-override');
+
+
+
 
 
 const app = express();
@@ -45,8 +48,10 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
-app.use(cors());
-app.use(methodOverride('_method'));
+app.use(cors({
+    origin: 'http://localhost:3000', // Your frontend URL
+    credentials: true, // Allow cookies to be sent
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -58,6 +63,9 @@ app.use(
         cookie: { secure: false }, // Set to true for HTTPS
     })
 );
+app.use(methodOverride('_method'));
+app.use(express.static('public')); // Serve static files from the "public" directory
+
 
 
 app.get('/register', (req, res) => {
@@ -68,13 +76,25 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
-// Routes
-app.get('/form', (req, res) => {
-    res.render('form', { title: 'Restaurant Search' });
-});
+app.use(methodOverride('_method', {
+    methods: ['POST'] // Only override POST requests
+}));
 
+app.use((req, res, next) => {
+    console.log('Overridden Method:', req.method); // Should show PUT or DELETE after override
+    next();
+});
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/auth', userRoutes);
+// Routes
+app.get('/form', async(req, res) => {
+    res.redirect('/api/restaurants');
+});
+
+app.get('/add-restaurant', (req, res) => {
+    res.render('addRestaurant');
+});
+
 
 // Initialize DB and Start Server
 db.initialize(process.env.DB_CONNECTION_STRING)

@@ -51,15 +51,18 @@ router.post('/login', async (req, res) => {
         if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
         // Generate JWT token
-        const token = generateToken(user);
+        const token = await generateToken(user);
+        console.log("tokenGenerate ", token)
 
         // Set JWT token in cookie
-        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-
+        res.cookie('token', token, {
+            httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+            secure: false,  // Set to true if using HTTPS
+            maxAge: 3600000, // 1 hour
+                });
         
-        // Render restaurant page
-        res.status(201).render('form', { username: user.username});
-    } catch (err) {
+                res.redirect(`/form?username=${encodeURIComponent(user.username)}`);
+            } catch (err) {
         res.status(500).json({ error: 'Login failed' });
     }
 });

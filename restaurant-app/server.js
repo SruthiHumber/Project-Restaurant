@@ -49,7 +49,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:3000', // Your frontend URL
+    origin: 'https://project-restaurant-pzn54hlem-sruthihumbers-projects.vercel.app/', // Your frontend URL
     credentials: true, // Allow cookies to be sent
 }));
 app.use(bodyParser.json());

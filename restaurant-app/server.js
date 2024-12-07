@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 const hbs = exphbs.create({
     extname: 'hbs',
     defaultLayout: 'main',
-    layoutsDir: 'views/layouts',
+    layoutsDir: path.join(__dirname, 'views', 'layouts'),
     handlebars: allowInsecurePrototypeAccess(Handlebars),
     helpers: {
         gt: (a, b) => a > b,             // Greater-than helper

@@ -65,16 +65,9 @@ app.use(
 );
 app.use(methodOverride('_method'));
 app.use(express.static('public')); // Serve static files from the "public" directory
-app.use((req, res, next) => {
-    res.setHeader(
-        "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline' https://vercel.live; style-src 'self' 'unsafe-inline';"
-    );
-    next();
-});
 
 app.get('/', (req, res) => {
-    res.send('Welcome to the Restaurant App!');
+    res.render('login', { title: 'Login' });
 });
 
 

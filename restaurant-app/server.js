@@ -73,6 +73,9 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Restaurant App!');
+});
 
 
 app.get('/register', (req, res) => {

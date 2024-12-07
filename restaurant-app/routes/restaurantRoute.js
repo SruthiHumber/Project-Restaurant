@@ -4,7 +4,7 @@ const { authMiddleware } = require('../middleware/auth');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { createObjectCsvWriter } = require('csv-writer');
+const { createObjectCsvStringifier } = require('csv-writer');
 const PDFDocument = require('pdfkit');
 
 
@@ -89,67 +89,31 @@ router.get('/export/csv', async (req, res) => {
         // Fetch restaurant data
         const restaurants = await db.getAllRestaurants();
 
-        // Define CSV headers
-        const csvWriter = createObjectCsvWriter({
-            path: 'restaurants.csv', // Temporary file
+        // Define CSV headers (only name, borough, and cuisine)
+        const csvStringifier = createObjectCsvStringifier({
             header: [
                 { id: 'name', title: 'Name' },
                 { id: 'borough', title: 'Borough' },
                 { id: 'cuisine', title: 'Cuisine' },
-                { id: 'address.building', title: 'Building' },
-                { id: 'address.street', title: 'Street' },
-                { id: 'zipcode', title: 'Zipcode' },
-                { id: 'longitude', title: 'Longitude' },
-                { id: 'latitude', title: 'Latitude' },
-                { id: 'grades', title: 'Grades' },
             ],
         });
 
-        // Map restaurant data to CSV format
-        
-        const csvData = restaurants.map(({
-            name = 'N/A',
-            borough = 'N/A',
-            cuisine = 'N/A',
-            address: {
-                building = 'N/A',
-                street = 'N/A',
-                zipcode = 'N/A',
-                coord = [null, null]
-            } = {}, // Default to an empty object for address
-            grades = []
-        }) => ({
+        // Map restaurant data to include only required fields
+        const csvData = restaurants.map(({ name = 'N/A', borough = 'N/A', cuisine = 'N/A' }) => ({
             name,
             borough,
             cuisine,
-            building,
-            street,
-            zipcode,
-            longitude: coord[0] || 'N/A',
-            latitude: coord[1] || 'N/A',
-            grades: grades.length
-                ? grades
-                      .map(({ date, grade, score }) => {
-                          if (!date || !grade || !score) return 'N/A';
-                          return `Date: ${new Date(date).toLocaleDateString()}, Grade: ${grade}, Score: ${score}`;
-                      })
-                      .join(' | ')
-                : 'N/A'
         }));
 
-        // Write CSV file
-        await csvWriter.writeRecords(csvData);
+        // Generate CSV content
+        const csvContent = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(csvData);
 
-        // Send the file as a response
-        res.download(path.join(__dirname, '../restaurants.csv'), 'restaurants.csv', (err) => {
-            if (err) {
-                console.error('Error sending file:', err);
-                res.status(500).send('Error generating CSV');
-            } else {
-                // Delete the file after sending it
-                fs.unlinkSync('restaurants.csv');
-            }
-        });
+        // Set response headers for file download
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="restaurants.csv"');
+
+        // Send the CSV content
+        res.send(csvContent);
     } catch (error) {
         console.error('Error exporting to CSV:', error);
         res.status(500).send('Error exporting to CSV');
@@ -184,21 +148,6 @@ router.get('/export/pdf', async (req, res) => {
                 .text(`${index + 1}. Name: ${restaurant.name}`, { align: 'left', continued: true })
                 .text(` | Borough: ${restaurant.borough}`, { align: 'left' });
             doc.text(`Cuisine: ${restaurant.cuisine}`);
-            doc.text(`Address: ${restaurant.address?.building || ''}, ${restaurant.address?.street || ''}, ${restaurant.address?.zipcode || ''}`);
-            doc.text(
-                `Coordinates: Longitude: ${restaurant.address?.coord?.[0] || 'N/A'}, Latitude: ${restaurant.address?.coord?.[1] || 'N/A'}`
-            );
-
-            if (restaurant.grades && restaurant.grades.length > 0) {
-                doc.text('Grades:', { underline: true });
-                restaurant.grades.forEach((grade) => {
-                    doc.text(
-                        `- Date: ${new Date(grade.date).toLocaleDateString()}, Grade: ${grade.grade}, Score: ${grade.score}`
-                    );
-                });
-            } else {
-                doc.text('Grades: N/A');
-            }
 
             doc.moveDown(); // Add spacing between restaurants
         });

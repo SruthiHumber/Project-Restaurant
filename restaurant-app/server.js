@@ -12,7 +12,7 @@ const session = require('express-session');
 const path = require('path');
 const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access');
 const Handlebars = require('handlebars');
-
+const cookieSession = require('cookie-session');
 
 
 
@@ -60,7 +60,7 @@ app.use(
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
-        cookie: { secure: false }, // Set to true for HTTPS
+        cookie: { secure: true }, // Set to true for HTTPS
     })
 );
 app.use(methodOverride('_method'));
